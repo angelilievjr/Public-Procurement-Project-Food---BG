@@ -15,9 +15,10 @@ receive EU subsidies.
 
 ### Scope
 - **Period:** 2020–2025 (2020–2021 flagged as COVID years)
-- **Food tenders:** CPV division 15 (excluding tobacco and alcohol) plus
-  catering services (CPV 555), with a Bulgarian title-keyword fallback where
-  the CPV code is missing
+- **Food tenders:** CPV division 15 (excluding tobacco and alcohol), the food
+  groups of CPV division 03 (fruit and vegetables, livestock products, fish),
+  plus catering services (CPV 555), with a Bulgarian title-keyword fallback
+  where the CPV code is missing
 - **Excluded:** negotiated procedures without prior publication (single-bid by
   design; described separately), cancelled lots, lots with zero bids
 
@@ -73,7 +74,8 @@ receive EU subsidies.
 *Coming soon.*
 
 ## Data licence
-Opentender data used under its published licence. See opentender.eu.
+Opentender data (opentender.eu) used under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 licence (CC BY-NC-SA 4.0).
 
 ## Author
 Angel Iliev · [LinkedIn](https://www.linkedin.com/in/angel-a-iliev)
