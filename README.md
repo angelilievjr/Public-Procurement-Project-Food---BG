@@ -74,3 +74,6 @@ receive EU subsidies.
 
 ## Data licence
 Opentender data used under its published licence. See opentender.eu.
+
+## Author
+Angel Iliev · [LinkedIn](https://www.linkedin.com/in/angel-a-iliev)
