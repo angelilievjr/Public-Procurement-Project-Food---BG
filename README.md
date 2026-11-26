@@ -134,5 +134,9 @@ count, winner, final price and award date are outcomes, never drivers.
 Opentender data (opentender.eu) used under the Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 licence (CC BY-NC-SA 4.0).
 
+## How this was built
+Built with AI assistance (Claude) for code drafting and review; scope,
+decisions and validation are my own.
+
 ## Author
 Angel Iliev · [LinkedIn](https://www.linkedin.com/in/angel-a-iliev)
