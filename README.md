@@ -1,6 +1,8 @@
 # Predicting Single-Bid Risk in Bulgarian Public Food Procurement
 
-**Status:** in progress. Scope and data check complete (DuckDB); next: loading into PostgreSQL, cleaning and analysis.
+**Status:** in progress. Scope, food definition and data checks are done in
+DuckDB. Next: loading the data into PostgreSQL, building the lot-level table,
+cleaning, then the analysis.
 
 ## Main Goal
 Identify which features of a Bulgarian public food tender predict that it will
@@ -11,8 +13,30 @@ published, so that risky tenders can be flagged at the design stage.
 Test whether food producers and processors that win single-bid tenders also
 receive EU subsidies.
 
-## Data check (first results)
-Food tenders 2020–2025, after applying the food definition below:
+## Progress
+- [x] Scope fixed: food tenders, 2020–2025
+- [x] Food definition built and validated (CPV codes plus a keyword fallback)
+- [x] Data checks: lots per year, usable bid counts, framework agreements,
+      missing estimated values
+- [ ] Load into PostgreSQL and build the lot-level table
+- [ ] Cleaning and driver construction
+- [ ] Hypothesis tests and logistic regression (Python)
+- [ ] Results and write-up
+
+## Done so far
+
+### Scope
+- **Period:** 2020–2025 (2020–2021 flagged as COVID years)
+- **Food tenders:** CPV division 15 (excluding tobacco and alcohol), the food
+  groups of CPV division 03 (fruit and vegetables, livestock products, fish),
+  plus catering services (CPV 553 and 555), with a Bulgarian title-keyword
+  fallback only where the CPV code is missing
+- **Validation:** keyword matches checked with repeated random samples of 50
+  until two in a row had at most one false positive; all excluded titles
+  reviewed by hand
+
+### Data check (first results)
+Food tenders 2020–2025, bid-level records grouped into lots:
 
 | | Count |
 |---|---|
@@ -24,43 +48,35 @@ Food tenders 2020–2025, after applying the food definition below:
 - The single-bid share is stable at 28–35% per year.
 - Missing bid counts and missing CPV codes both jump in 2024–2025, which points
   to a change in how the source register records data rather than chance.
-  The analysis controls for year and is re-run on 2020–2023 only.
 
-## Key design decisions
-- **Only pre-publication information as predictors.** Bid count, winner, final
-  price and award date are outcomes, never drivers (no data leakage).
-- **The lot is the unit**, because bids are made per lot. Lots in the same
-  tender are not independent, so standard errors are clustered by tender.
+### Decisions taken from the data checks
+- **The lot is the unit**, because bids are made per lot.
 - **Bid count is taken from the recorded field, never by counting rows**: rows
   are winning bids, not all bids.
-- **Missing bid counts are excluded, never treated as zero**, and the missing
-  lots are compared with the rest to check for selection bias.
-- **Missing lot values are filled from the tender value and flagged**
-  (13.6% of usable lots). Dropping them would halve 2025 and bias the sample
-  towards 2022–2023; a robustness check uses real lot values only.
-- **Framework-agreement status is not used as a driver**: it is blank for
+- **Missing bid counts are excluded, never treated as zero.**
+- **Framework-agreement status will not be used as a driver**: it is blank for
   about 70% of food records, and blank is treated as unknown, not as "no".
+- **Missing lot values (13.6% of usable lots) will be filled from the tender
+  value and flagged**, because dropping them would halve 2025 and bias the
+  sample towards 2022–2023.
 
-## Methods
+The SQL for these steps is in [`sql/duckdb/`](sql/duckdb).
 
-### Scope
-- **Period:** 2020–2025 (2020–2021 flagged as COVID years)
-- **Food tenders:** CPV division 15 (excluding tobacco and alcohol), the food
-  groups of CPV division 03 (fruit and vegetables, livestock products, fish),
-  plus catering services (CPV 553 and 555), with a Bulgarian title-keyword
-  fallback only where the CPV code is missing. Keyword matches were checked by
-  repeated random samples, and all excluded titles were reviewed by hand.
+## Planned analysis
+*Everything in this section is a plan and subject to change as the data is
+cleaned and the first results come in.*
+
+### Unit and outcome
+- **Outcome:** single-bid flag (bid count = 1)
+- Tender-level context on each lot: number of lots, number of distinct
+  winners, whether one firm won every lot
 - **Excluded from the main model:** negotiated procedures without prior
   publication (single-bid by design; described separately), cancelled lots,
   lots with zero bids
 
-### Unit of analysis and outcome
-- **Unit:** lot (bid-level records aggregated to lots)
-- **Outcome:** single-bid flag (bid count = 1)
-- Tender-level context kept on each lot: number of lots, number of distinct
-  winners, whether one firm won every lot
-
 ### Drivers (all known before publication)
+Only information the buyer has before publishing can be a predictor. Bid
+count, winner, final price and award date are outcomes, never drivers.
 - Procedure type
 - Submission deadline relative to the legal minimum
 - Estimated value (log-transformed)
@@ -74,7 +90,8 @@ Food tenders 2020–2025, after applying the food definition below:
    Mann-Whitney U (continuous drivers), Holm-corrected for multiple testing,
    with significance level and correction fixed before seeing results
 2. **Logistic regression:** all drivers together, year fixed effects,
-   standard errors clustered by tender; results reported as odds ratios
+   standard errors clustered by tender (lots in one tender are not
+   independent); results reported as odds ratios
 3. **Robustness:** without 2020–2021, 2020–2023 only, at tender level, with
    real lot values only, and without known framework agreements
 4. **Prediction test:** train on earlier years, evaluate on a held-out later
@@ -94,7 +111,7 @@ Food tenders 2020–2025, after applying the food definition below:
 - Tender year empty in all source files (taken from the file name)
 - Framework-agreement flag blank for about 70% of food records
 - The legal ground for negotiated procedures without prior publication is not
-  in the data, so that part is descriptive only
+  in the data, so that part will be descriptive only
 
 ### Candidate sources for the extension
 - CAP beneficiary lists (State Fund Agriculture)
